@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  name      String?
+  avatar    String?
+  bio       String?
+  points    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stories   Story[]
+  likes     Like[]
+  comments  Comment[]
+  badges    UserBadge[]
+
+  @@map("users")
+}
+
+model Story {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  excerpt     String?
+  coverImage  String?
+  genre       String
+  status      String @default("DRAFT")
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  likes       Like[]
+  comments    Comment[]
+  reads       Read[]
+  
+  // Contest tracking
+  contestMonth String?
+  isWinner     Boolean   @default(false)
+  
+  @@map("stories")
+}
+
+model Like {
+  id      String @id @default(cuid())
+  userId  String
+  storyId String
+  
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, storyId])
+  @@map("likes")
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  content String
+  userId  String
+  storyId String
+  
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("comments")
+}
+
+model Read {
+  id      String @id @default(cuid())
+  userId  String
+  storyId String
+  
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, storyId])
+  @@map("reads")
+}
+
+model Badge {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String
+  icon        String
+  
+  userBadges  UserBadge[]
+  
+  @@map("badges")
+}
+
+model UserBadge {
+  id      String @id @default(cuid())
+  userId  String
+  badgeId String
+  
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge   Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  
+  earnedAt DateTime @default(now())
+  
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+// Genre options: FANTASY, ROMANCE, HORROR, SCIFI, MYSTERY, THRILLER, DRAMA, COMEDY, ADVENTURE, HISTORICAL, POETRY, OTHER
+// Status options: DRAFT, PUBLISHED, ARCHIVED
