@@ -28,7 +28,7 @@ npx prisma db push
 npm run dev
 ```
 
-4. Open [http://localhost:3000](https://storyverse-platform.vercel.app/) in your browser.
+4. Open (https://storyverse-platform.vercel.app/) in your browser.
 
 ## 🏗️ Tech Stack
 
